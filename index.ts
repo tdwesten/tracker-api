@@ -3,18 +3,15 @@ import { Hono } from "https://deno.land/x/hono@v2.6.2/mod.ts";
 // import { bearerAuth } from "https://deno.land/x/hono@v2.6.2/middleware.ts";
 import MetricController from "./metrics-controller.ts";
 import DatabaseService from "./database.ts";
-import Logger from "https://deno.land/x/logger@v1.0.2/logger.ts";
 
-const logger = new Logger();
-
-logger.info("Starting server");
+console.log("Starting server");
 
 // Get token from env
 const token = Deno.env.get("TOKEN") ? Deno.env.get("TOKEN") : false;
 
 // check if token is provided
 if (!token) {
-    logger.error("No token provided");
+    console.error("No token provided");
     Deno.exit(1);
 }
 
