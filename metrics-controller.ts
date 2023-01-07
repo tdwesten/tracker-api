@@ -1,13 +1,10 @@
 import { Context } from "https://deno.land/x/hono@v2.6.2/mod.ts";
 import { MetricSchema } from "./metric-schema.ts";
-import Logger from "https://deno.land/x/logger@v1.0.2/logger.ts";
 import { SyncRequest } from "./types/sync-request.ts";
 
 export default class MetricController {
-    log: Logger;
-
     constructor() {
-        this.log = new Logger();
+        console.log("Metric controller initialized");
     }
 
     /**
@@ -18,14 +15,23 @@ export default class MetricController {
      * @returns {Promise<Context>}
      */
     async sync(context: Context) {
+        console.log(context.req.headers);
+
+        console.log("Syncing metrics");
+
         const json: SyncRequest =
             (await context.req.json()) as unknown as SyncRequest;
 
-        let counter = 0;
+        if (!json?.data?.metrics) {
+            console.error("WRONG datastructure, No metrics provided");
+
+            return await context.json(
+                { message: "WRONG datastructure, No metrics provided" },
+                400
+            );
+        }
 
         json.data.metrics.forEach((metric) => {
-            this.log.info(`Syncing metric ${metric.name}`);
-
             metric.data.forEach(async (data) => {
                 const existingMetric = await MetricSchema.where(
                     "name",
@@ -35,15 +41,11 @@ export default class MetricController {
                     .first();
 
                 if (existingMetric) {
-                    this.log.info(`Metric ${metric.name} already exists`);
-
                     existingMetric.qty = data.qty;
                     existingMetric.source = data.source;
 
                     await existingMetric.update();
                 } else {
-                    this.log.info(`Metric ${metric.name} does not exist`);
-
                     await MetricSchema.create([
                         {
                             name: metric.name,
@@ -54,16 +56,10 @@ export default class MetricController {
                         },
                     ]);
                 }
-                counter++;
             });
         });
 
-        this.log.info(`Synced ${counter} metrics`);
-
-        return await context.json(
-            { message: `Synced ${counter} metrics` },
-            200
-        );
+        return await context.json({ message: `Synced metrics` }, 200);
     }
 
     /**
@@ -74,6 +70,8 @@ export default class MetricController {
      * @returns {Promise<Context>}
      */
     async all(context: Context) {
+        console.log("Returning all metrics");
+
         const all = await await await MetricSchema.all();
 
         return await context.json(all, 200);
