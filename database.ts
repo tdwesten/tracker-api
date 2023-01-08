@@ -24,6 +24,7 @@ export default class DatabaseService {
         this.database = new Database(this.connector, true);
 
         // link models to database
+
         this.database.link([MetricSchema]);
 
         // sync models to database

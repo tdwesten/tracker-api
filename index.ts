@@ -44,6 +44,7 @@ app.get("/", (c) =>
 );
 app.post("/api/sync", (c) => metricController.sync(c));
 app.get("/api/metrics", (c) => metricController.all(c));
+app.get("/api/metrics/:name", (c) => metricController.getByName(c));
 
 // Start server
 serve(app.fetch);

@@ -15,8 +15,6 @@ export default class MetricController {
      * @returns {Promise<Context>}
      */
     async sync(context: Context) {
-        console.log(context.req.headers);
-
         console.log("Syncing metrics");
 
         const json: SyncRequest =
@@ -33,24 +31,30 @@ export default class MetricController {
 
         json.data.metrics.forEach((metric) => {
             metric.data.forEach(async (data) => {
+                const date = data.date?.split(" ")[0];
+                const id = `${metric.name}-${date}`;
+
                 const existingMetric = await MetricSchema.where(
-                    "name",
-                    metric.name
-                )
-                    .where("created_at", data.date)
-                    .first();
+                    "id",
+                    id
+                ).first();
+
+                console.log(existingMetric);
 
                 if (existingMetric) {
+                    console.log("Updating existing metric");
                     existingMetric.qty = data.qty;
                     existingMetric.source = data.source;
 
                     await existingMetric.update();
                 } else {
+                    console.log("Creating new metric");
                     await MetricSchema.create([
                         {
+                            id: id,
                             name: metric.name,
                             units: metric.units,
-                            created_at: new Date(data.date?.split(" ")[0]),
+                            created_at: new Date(date),
                             source: data.source,
                             qty: data.qty,
                         },
@@ -75,5 +79,28 @@ export default class MetricController {
         const all = await await await MetricSchema.all();
 
         return await context.json(all, 200);
+    }
+
+    /**
+     * Return metric by name
+     *
+     * @param context
+     *
+     * @returns {Promise<Context>}
+     *
+     * @throws {Error}
+     */
+    async getByName(context: Context) {
+        const name = context.req.param("name");
+
+        if (!name) {
+            throw new Error("No name provided");
+        }
+
+        console.log(`Returning metrics for: ${name}`);
+
+        const metrics = await MetricSchema.where("name", name).get();
+
+        return await context.json(metrics, 200);
     }
 }
