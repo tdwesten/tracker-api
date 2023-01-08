@@ -25,10 +25,23 @@ const metricController = new MetricController();
 // Init app/server
 const app = new Hono();
 
+// Auth middleware
+app.use("/api/*", bearerAuth({ token }));
+
 // Routes
-app.use("*", bearerAuth({ token }));
-app.post("/sync", (c) => metricController.sync(c));
-app.get("/metrics", (c) => metricController.all(c));
+app.get("/", (c) =>
+    c.json({
+        title: "Tracker API",
+        description: "API for the tracker app, see twitter tread for more info",
+        twitter_tread:
+            "https://twitter.com/tdwesten/status/1611803663441313795",
+        author: "Thomas van der Westen",
+        twitter: "https://twitter.com/tdwesten",
+        repo: "https://github.com/tdwesten/tracker-api",
+    })
+);
+app.post("/api/sync", (c) => metricController.sync(c));
+app.get("/api/metrics", (c) => metricController.all(c));
 
 // Start server
 serve(app.fetch);
