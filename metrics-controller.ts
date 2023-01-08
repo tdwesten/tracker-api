@@ -50,7 +50,7 @@ export default class MetricController {
                         {
                             name: metric.name,
                             units: metric.units,
-                            created_at: new Date(data.date.split(" ")[0]),
+                            created_at: new Date(data.date?.split(" ")[0]),
                             source: data.source,
                             qty: data.qty,
                         },
