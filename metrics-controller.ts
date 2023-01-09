@@ -115,6 +115,29 @@ export default class MetricController {
     }
 
     /**
+     * Return all metrics for last 7 days
+     *
+     * @param context
+     *
+     * @returns {Promise<Context>}
+     */
+    async week(context: Context) {
+        this.logger.info("Returning all metrics for last 7 days");
+
+        const metrics = await this.db.metrics
+            .find({
+                created_at: {
+                    $gte: new Date(
+                        new Date().setDate(new Date().getDate() - 7)
+                    ),
+                },
+            })
+            .toArray();
+
+        return await context.json(metrics, 200);
+    }
+
+    /**
      * Return metric by name
      *
      * @param context

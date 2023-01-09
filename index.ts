@@ -1,10 +1,12 @@
 import { serve } from "https://deno.land/std@0.167.0/http/server.ts";
+import {
+    bearerAuth,
+    cors,
+} from "https://deno.land/x/hono@v2.6.2/middleware.ts";
 import { Hono } from "https://deno.land/x/hono@v2.6.2/mod.ts";
-import { bearerAuth } from "https://deno.land/x/hono@v2.6.2/middleware.ts";
-import MetricController from "./metrics-controller.ts";
 import { Logger } from "https://deno.land/x/optic@1.3.5/mod.ts";
-import { prettyJSON } from "https://deno.land/x/hono@v2.6.2/middleware.ts";
 import DatabaseService from "./database.ts";
+import MetricController from "./metrics-controller.ts";
 
 const logger = new Logger();
 
@@ -25,8 +27,8 @@ const app = new Hono();
 const db = new DatabaseService();
 
 // Middleware
-app.use("/api/*", bearerAuth({ token })); // Auth
-app.use("*", prettyJSON()); // Pretty JSON
+app.use("/api/*", cors());
+app.use("/api/*", bearerAuth({ token }));
 
 // Routes
 app.get("/", (c) =>
@@ -42,7 +44,7 @@ app.get("/", (c) =>
 );
 app.post("/api/sync", (c) => metricController.sync(c));
 app.get("/api/metrics", (c) => metricController.all(c));
-app.get("/api/metrics/:name", (c) => metricController.getByName(c));
+app.get("/api/metrics/week", (c) => metricController.week(c));
 
 // Start server
 serve(app.fetch);
