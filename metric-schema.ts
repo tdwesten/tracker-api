@@ -1,26 +1,12 @@
-import { DataTypes, Model } from "https://deno.land/x/denodb@v1.1.0/mod.ts";
+import { ObjectId } from "https://deno.land/x/mongo@v0.31.1/deps.ts";
 
-export class MetricSchema extends Model {
-    // database table name
-    static table = "metrics";
-
-    // add timestamps (updatedAt, createdAt)
-    static timestamps = true;
-
-    // fields definition
-    static fields = {
-        id: {
-            primaryKey: true,
-            type: DataTypes.STRING,
-        },
-        name: DataTypes.STRING,
-        units: DataTypes.STRING,
-        qty: DataTypes.FLOAT,
-        source: DataTypes.STRING,
-    };
-
-    // default values
-    static defaults = {
-        source: null,
-    };
+export interface MetricSchema {
+    _id: ObjectId;
+    hash: string;
+    name: string;
+    units: string;
+    qty: number;
+    source: string | null;
+    created_at: Date;
+    updated_at: Date;
 }

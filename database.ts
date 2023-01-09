@@ -1,35 +1,43 @@
 import {
-    Database,
-    PostgresConnector,
-} from "https://deno.land/x/denodb@v1.1.0/mod.ts";
+    Bson,
+    MongoClient,
+    Collection,
+} from "https://deno.land/x/mongo@v0.31.1/mod.ts";
+import { Logger } from "https://deno.land/x/optic@1.3.5/mod.ts";
 import { MetricSchema } from "./metric-schema.ts";
 
 export default class DatabaseService {
-    database: Database;
-    connector: PostgresConnector;
+    host = Deno.env.get("DATABASE_HOST") || null;
+    username = Deno.env.get("DATABASE_USERNAME") || null;
+    password = Deno.env.get("DATABASE_PASSWORD") || null;
+    basebase = Deno.env.get("DATABASE_NAME") || null;
+    client: MongoClient;
+    logger: Logger;
+    declare metrics: Collection<MetricSchema>;
 
-    host = Deno.env.get("DATABASE_HOST") || "";
-    username = Deno.env.get("DATABASE_USERNAME") || "";
-    password = Deno.env.get("DATABASE_PASSWORD") || "";
+    // Collections
 
     constructor() {
-        this.connector = new PostgresConnector({
-            host: this.host,
-            username: this.username,
-            password: this.password,
-            database: "postgres",
+        this.client = new MongoClient();
+        this.logger = new Logger();
+
+        this.connect().then(() => {
+            this.link_collections();
+
+            this.logger.info("Database initialized");
         });
+    }
 
-        // init database
-        this.database = new Database(this.connector, true);
+    connect() {
+        return this.client.connect(
+            `mongodb+srv://${this.username}:${this.password}@${this.basebase}.${this.host}/?authMechanism=SCRAM-SHA-1`
+        );
+    }
 
-        // link models to database
+    link_collections() {
+        const db = this.client.database("test");
+        this.metrics = db.collection<MetricSchema>("metrics");
 
-        this.database.link([MetricSchema]);
-
-        // sync models to database
-        this.database.sync();
-
-        console.log("Database initialized");
+        this.logger.info("Collections linked");
     }
 }

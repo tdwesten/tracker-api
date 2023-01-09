@@ -2,9 +2,8 @@ import { serve } from "https://deno.land/std@0.167.0/http/server.ts";
 import { Hono } from "https://deno.land/x/hono@v2.6.2/mod.ts";
 import { bearerAuth } from "https://deno.land/x/hono@v2.6.2/middleware.ts";
 import MetricController from "./metrics-controller.ts";
-import DatabaseService from "./database.ts";
 import { Logger } from "https://deno.land/x/optic@1.3.5/mod.ts";
-import { prettyJSON } from "https://deno.land/x/hono/middleware.ts";
+import { prettyJSON } from "https://deno.land/x/hono@v2.6.2/middleware.ts";
 
 const logger = new Logger();
 
@@ -16,9 +15,6 @@ if (!token) {
     logger.error("No token provided");
     Deno.exit(1);
 }
-
-// Init database
-new DatabaseService();
 
 // Init controllers
 const metricController = new MetricController();
