@@ -8,9 +8,10 @@ export default class MetricController {
     logger: Logger;
 
     constructor() {
-        console.log("Metric controller initialized");
         this.logger = new Logger();
         this.db = new DatabaseService();
+
+        this.logger.info("Metric controller initialized");
     }
 
     /**
@@ -21,13 +22,13 @@ export default class MetricController {
      * @returns {Promise<Context>}
      */
     async sync(context: Context) {
-        console.log("Syncing metrics");
+        this.logger.info("Syncing metrics");
 
         const json: SyncRequest =
             (await context.req.json()) as unknown as SyncRequest;
 
         if (!json?.data?.metrics) {
-            console.error("WRONG datastructure, No metrics provided");
+            this.logger.error("No metrics provided");
 
             return await context.json(
                 { message: "WRONG datastructure, No metrics provided" },
@@ -35,47 +36,67 @@ export default class MetricController {
             );
         }
 
-        json.data.metrics.forEach((metric) => {
-            metric.data.forEach(async (data) => {
-                const date = data.date?.split(" ")[0];
-                const hash = `${metric.name}-${date}`;
+        let insertedCount = 0;
+        let updatedCount = 0;
 
-                const existingMetric = await this.db.metrics.findOne({
-                    hash: hash,
-                });
+        await Promise.all(
+            json.data.metrics.map(async (metric) => {
+                await Promise.all(
+                    metric.data.map(async (data) => {
+                        const date = data.date?.split(" ")[0];
+                        const hash = `${metric.name}-${date}`;
 
-                if (existingMetric) {
-                    await this.db.metrics.updateOne(
-                        { hash: hash },
-                        {
-                            $set: {
-                                qty: data.qty,
-                                source: data.source,
+                        const existingMetric = await this.db.metrics.findOne({
+                            hash: hash,
+                        });
+
+                        if (existingMetric) {
+                            await this.db.metrics.updateOne(
+                                { hash: hash },
+                                {
+                                    $set: {
+                                        qty: data.qty,
+                                        source: data.source,
+                                        updated_at: new Date(),
+                                    },
+                                }
+                            );
+
+                            updatedCount++;
+
+                            this.logger.info(
+                                `Updated metric with id: ${existingMetric._id}`
+                            );
+                        } else {
+                            const insertId = await this.db.metrics.insertOne({
+                                hash: hash,
+                                name: metric.name,
+                                units: metric.units,
+                                created_at: new Date(date),
                                 updated_at: new Date(),
-                            },
+                                source: data.source,
+                                qty: data.qty,
+                            });
+
+                            insertedCount++;
+
+                            this.logger.info(
+                                `Inserted metric with id: ${insertId}`
+                            );
                         }
-                    );
+                    })
+                );
+            })
+        );
 
-                    this.logger.info(
-                        `Updated metric with id: ${existingMetric._id}`
-                    );
-                } else {
-                    const insertId = await this.db.metrics.insertOne({
-                        hash: hash,
-                        name: metric.name,
-                        units: metric.units,
-                        created_at: new Date(date),
-                        updated_at: new Date(),
-                        source: data.source,
-                        qty: data.qty,
-                    });
-
-                    this.logger.info(`Inserted metric with id: ${insertId}`);
-                }
-            });
-        });
-
-        return await context.json({ message: `Synced metrics` }, 200);
+        return await context.json(
+            {
+                message: `Synced metrics`,
+                inserted: insertedCount,
+                updated: updatedCount,
+            },
+            200
+        );
     }
 
     /**
