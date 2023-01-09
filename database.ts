@@ -1,7 +1,6 @@
 import {
-    Bson,
-    MongoClient,
     Collection,
+    MongoClient,
 } from "https://deno.land/x/mongo@v0.31.1/mod.ts";
 import { Logger } from "https://deno.land/x/optic@1.3.5/mod.ts";
 import { MetricSchema } from "./metric-schema.ts";

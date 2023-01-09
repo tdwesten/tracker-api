@@ -4,6 +4,7 @@ import { bearerAuth } from "https://deno.land/x/hono@v2.6.2/middleware.ts";
 import MetricController from "./metrics-controller.ts";
 import { Logger } from "https://deno.land/x/optic@1.3.5/mod.ts";
 import { prettyJSON } from "https://deno.land/x/hono@v2.6.2/middleware.ts";
+import DatabaseService from "./database.ts";
 
 const logger = new Logger();
 
@@ -21,6 +22,7 @@ const metricController = new MetricController();
 
 // Init app/server
 const app = new Hono();
+const db = new DatabaseService();
 
 // Middleware
 app.use("/api/*", bearerAuth({ token })); // Auth
