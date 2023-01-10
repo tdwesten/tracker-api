@@ -12,9 +12,9 @@ export default class DatabaseService {
     basebase = Deno.env.get("DATABASE_NAME") || null;
     client: MongoClient;
     logger: Logger;
-    declare metrics: Collection<MetricSchema>;
 
     // Collections
+    declare metrics: Collection<MetricSchema>;
 
     constructor() {
         this.client = new MongoClient();
@@ -31,9 +31,9 @@ export default class DatabaseService {
         await this.link_collections();
     }
 
-    link_collections() {
-        const db = this.client.database("test");
-        this.metrics = db.collection<MetricSchema>("metrics");
+    async link_collections() {
+        const db = await this.client.database("test");
+        this.metrics = await db.collection<MetricSchema>("metrics");
 
         this.logger.info("Collections linked");
     }
