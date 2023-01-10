@@ -10,9 +10,6 @@ export default class MetricController {
     constructor() {
         this.logger = new Logger();
         this.db = new DatabaseService();
-
-        this.db.connect().then(() => this.db.link_collections());
-
         this.logger.info("Metric controller initialized");
     }
 

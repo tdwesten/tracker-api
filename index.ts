@@ -46,5 +46,12 @@ app.post("/api/sync", (c) => metricController.sync(c));
 app.get("/api/metrics", (c) => metricController.all(c));
 app.get("/api/metrics/week", (c) => metricController.week(c));
 
-// Start server
-serve(app.fetch);
+// Start server after db is connected
+db.connect()
+    .then(() => {
+        return db.link_collections();
+    })
+    .then(() => {
+        // Start server
+        serve(app.fetch);
+    });
