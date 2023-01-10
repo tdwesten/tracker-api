@@ -19,12 +19,13 @@ if (!token) {
     Deno.exit(1);
 }
 
-// Init controllers
-const metricController = new MetricController();
-
 // Init app/server
 const app = new Hono();
 const db = new DatabaseService();
+await db.connect();
+
+// Init controllers
+const metricController = new MetricController();
 
 // Middleware
 app.use("/api/*", cors());

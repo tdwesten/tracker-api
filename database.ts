@@ -19,18 +19,16 @@ export default class DatabaseService {
     constructor() {
         this.client = new MongoClient();
         this.logger = new Logger();
-
-        this.connect().then(() => {
-            this.link_collections();
-
-            this.logger.info("Database initialized");
-        });
     }
 
-    connect() {
-        return this.client.connect(
+    async connect() {
+        await this.client.connect(
             `mongodb+srv://${this.username}:${this.password}@${this.basebase}.${this.host}/?authMechanism=SCRAM-SHA-1`
         );
+
+        this.logger.info("Connected to database");
+
+        await this.link_collections();
     }
 
     link_collections() {
