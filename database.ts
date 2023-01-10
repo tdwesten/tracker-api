@@ -1,5 +1,6 @@
 import {
     Collection,
+    Database,
     MongoClient,
 } from "https://deno.land/x/mongo@v0.31.1/mod.ts";
 import { Logger } from "https://deno.land/x/optic@1.3.5/mod.ts";
@@ -14,7 +15,8 @@ export default class DatabaseService {
     logger: Logger;
 
     // Collections
-    declare metrics: Collection<MetricSchema>;
+    declare _metrics: Collection<MetricSchema>;
+    declare db: Database;
 
     constructor() {
         this.client = new MongoClient();
@@ -27,14 +29,17 @@ export default class DatabaseService {
         );
 
         this.logger.info("Connected to database");
-
-        await this.link_collections();
     }
 
     async link_collections() {
-        const db = await this.client.database("test");
-        this.metrics = await db.collection<MetricSchema>("metrics");
+        const db = this.client.database("test");
+
+        this._metrics = await db.collection<MetricSchema>("metrics");
 
         this.logger.info("Collections linked");
+    }
+
+    get metrics() {
+        return this._metrics;
     }
 }
