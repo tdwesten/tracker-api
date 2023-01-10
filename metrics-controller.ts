@@ -21,6 +21,9 @@ export default class MetricController {
      * @returns {Promise<Context>}
      */
     async sync(context: Context) {
+        await this.db.connect();
+        await this.db.link_collections();
+
         this.logger.info("Syncing metrics");
 
         const json: SyncRequest =

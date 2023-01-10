@@ -21,7 +21,6 @@ if (!token) {
 
 // Init app/server
 const app = new Hono();
-const db = new DatabaseService();
 
 // Init controllers
 const metricController = new MetricController();
@@ -46,12 +45,4 @@ app.post("/api/sync", (c) => metricController.sync(c));
 app.get("/api/metrics", (c) => metricController.all(c));
 app.get("/api/metrics/week", (c) => metricController.week(c));
 
-// Start server after db is connected
-db.connect()
-    .then(() => {
-        return db.link_collections();
-    })
-    .then(() => {
-        // Start server
-        serve(app.fetch);
-    });
+serve(app.fetch);
