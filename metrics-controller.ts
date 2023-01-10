@@ -48,6 +48,8 @@ export default class MetricController {
                         const date = data.date?.split(" ")[0];
                         const hash = `${metric.name}-${date}`;
 
+                        this.logger.debug(this.db.metrics);
+
                         const existingMetric = await this.db.metrics.findOne({
                             hash: hash,
                         });
