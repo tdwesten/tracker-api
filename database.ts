@@ -32,7 +32,7 @@ export default class DatabaseService {
     }
 
     async link_collections() {
-        const db = this.client.database("test");
+        const db = this.client.database("tracker");
 
         this._metrics = await db.collection<MetricSchema>("metrics");
 
