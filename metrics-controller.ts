@@ -56,7 +56,7 @@ export default class MetricController {
 
                         if (existingMetric) {
                             await this.db.metrics.updateOne(
-                                { hash: hash },
+                                { _id: existingMetric._id },
                                 {
                                     $set: {
                                         qty: data.qty,
@@ -126,6 +126,9 @@ export default class MetricController {
      * @returns {Promise<Context>}
      */
     async week(context: Context) {
+        await this.db.connect();
+        await this.db.link_collections();
+
         this.logger.info("Returning all metrics for last 7 days");
 
         const metrics = await this.db.metrics
